@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Pro Car Game</title>
+  <title>Car Game</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -24,177 +24,11 @@
 
 <button onclick="startGame()" class="start">Start Game</button>
 
-<!-- 🎵 Music -->
 <audio id="bgMusic" loop>
   <source src="music.mp3" type="audio/mpeg">
 </audio>
 
-<script src="script.js"></script>
+<script src="script.js" defer></script>
 
 </body>
 </html>
-body {
-  margin: 0;
-  font-family: Arial;
-  background: black;
-  color: white;
-  text-align: center;
-}
-
-.topBar {
-  display: flex;
-  justify-content: space-around;
-  padding: 10px;
-}
-
-.gameArea {
-  width: 100%;
-  height: 80vh;
-  background: url('road.jpg');
-  background-size: cover;
-  position: relative;
-  overflow: hidden;
-}
-
-.car {
-  width: 80px;
-  position: absolute;
-  bottom: 20px;
-  left: 45%;
-}
-
-.enemy {
-  width: 70px;
-  position: absolute;
-  top: -120px;
-}
-
-.controls {
-  position: fixed;
-  bottom: 20px;
-  width: 100%;
-}
-
-button {
-  font-size: 25px;
-  padding: 15px;
-  margin: 10px;
-  border-radius: 10px;
-  border: none;
-}
-
-#leftBtn { background: red; }
-#rightBtn { background: green; }
-.start { background: yellow; }
-let car = document.getElementById("car");
-let gameArea = document.getElementById("gameArea");
-let scoreText = document.getElementById("score");
-let highScoreText = document.getElementById("highScore");
-let music = document.getElementById("bgMusic");
-
-let left = 45;
-let score = 0;
-let speed = 5;
-let enemies = [];
-let gameRunning = false;
-
-// High Score load
-let highScore = localStorage.getItem("highScore") || 0;
-highScoreText.innerText = "High: " + highScore;
-
-function startGame() {
-  score = 0;
-  speed = 5;
-  gameRunning = true;
-  music.play();
-
-  enemies.forEach(e => e.remove());
-  enemies = [];
-
-  // create multiple enemies
-  for (let i = 0; i < 3; i++) {
-    createEnemy();
-  }
-
-  gameLoop();
-}
-
-function createEnemy() {
-  let enemy = document.createElement("img");
-  enemy.src = "enemy.png";
-  enemy.classList.add("enemy");
-  enemy.style.left = Math.random() * 80 + "%";
-  gameArea.appendChild(enemy);
-  enemies.push(enemy);
-}
-
-function gameLoop() {
-  if (!gameRunning) return;
-
-  enemies.forEach(enemy => {
-    let top = parseInt(enemy.style.top || -120);
-    top += speed;
-    enemy.style.top = top + "px";
-
-    if (top > window.innerHeight) {
-      enemy.style.top = "-120px";
-      enemy.style.left = Math.random() * 80 + "%";
-      score++;
-      speed += 0.2;
-      scoreText.innerText = "Score: " + score;
-    }
-
-    // Collision
-    let carRect = car.getBoundingClientRect();
-    let enemyRect = enemy.getBoundingClientRect();
-
-    if (
-      carRect.left < enemyRect.right &&
-      carRect.right > enemyRect.left &&
-      carRect.top < enemyRect.bottom &&
-      carRect.bottom > enemyRect.top
-    ) {
-      gameOver();
-    }
-  });
-
-  requestAnimationFrame(gameLoop);
-}
-
-function gameOver() {
-  gameRunning = false;
-  music.pause();
-
-  if (score > highScore) {
-    localStorage.setItem("highScore", score);
-  }
-
-  alert("💥 Game Over | Score: " + score);
-}
-
-// Controls
-let moveInterval;
-
-document.getElementById("leftBtn").ontouchstart = () => {
-  moveInterval = setInterval(() => moveLeft(), 50);
-};
-document.getElementById("leftBtn").ontouchend = () => clearInterval(moveInterval);
-
-document.getElementById("rightBtn").ontouchstart = () => {
-  moveInterval = setInterval(() => moveRight(), 50);
-};
-document.getElementById("rightBtn").ontouchend = () => clearInterval(moveInterval);
-
-function moveLeft() {
-  if (left > 5) {
-    left -= 2;
-    car.style.left = left + "%";
-  }
-}
-
-function moveRight() {
-  if (left < 85) {
-    left += 2;
-    car.style.left = left + "%";
-  }
-}
