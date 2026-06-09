@@ -1,193 +1,277 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Advanced To-Do App</title>
+<title>Car Racing Game</title>
 
 <style>
 body{
-    font-family: Arial, sans-serif;
-    background:#f4f4f4;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-    transition:0.3s;
+    margin:0;
+    overflow:hidden;
+    background:#222;
+    font-family:Arial;
 }
 
-.container{
-    background:white;
-    padding:20px;
-    border-radius:10px;
-    width:400px;
-    box-shadow:0 0 10px rgba(0,0,0,0.2);
+canvas{
+    display:block;
+    margin:auto;
+    background:#666;
 }
 
-h2{
-    text-align:center;
+#score{
+    position:absolute;
+    top:10px;
+    left:10px;
+    color:white;
+    font-size:24px;
 }
 
-input{
-    padding:10px;
-    margin:5px 0;
+#speed{
+    position:absolute;
+    top:45px;
+    left:10px;
+    color:white;
+    font-size:24px;
 }
 
-#taskInput{
-    width:60%;
-}
-
-button{
-    padding:10px;
+#startBtn{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    padding:15px 30px;
+    font-size:24px;
     cursor:pointer;
 }
-
-ul{
-    list-style:none;
-    padding:0;
-}
-
-li{
-    background:#eee;
-    margin-top:10px;
-    padding:10px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    border-radius:5px;
-}
-
-.completed{
-    text-decoration: line-through;
-    color:gray;
-}
-
-.delete-btn{
-    background:red;
-    color:white;
-    border:none;
-    padding:5px 10px;
-}
-
-.dark{
-    background:#222;
-    color:white;
-}
-
-.dark .container{
-    background:#333;
-    color:white;
-}
-
-.dark li{
-    background:#555;
-}
 </style>
-</head>
 
+</head>
 <body>
 
-<div class="container">
-    <h2>To-Do App</h2>
+<div id="score">Score: 0</div>
+<div id="speed">Speed: 0</div>
 
-    <button onclick="toggleDarkMode()">🌙 Dark Mode</button>
+<button id="startBtn" onclick="startGame()">
+Start Game
+</button>
 
-    <br><br>
-
-    <input type="text" id="taskInput" placeholder="Enter a task">
-
-    <input type="date" id="dueDate">
-
-    <button onclick="addTask()">Add</button>
-
-    <p>Total Tasks: <span id="count">0</span></p>
-
-    <ul id="taskList"></ul>
-</div>
+<canvas id="gameCanvas" width="400" height="700"></canvas>
 
 <script>
 
-window.onload = function(){
-    document.getElementById("taskList").innerHTML =
-    localStorage.getItem("tasks") || "";
+const canvas =
+document.getElementById("gameCanvas");
 
-    updateCount();
+const ctx =
+canvas.getContext("2d");
+
+let score = 0;
+let speed = 5;
+let gameStarted = false;
+
+const car = {
+    x:170,
+    y:560,
+    width:60,
+    height:100,
+    moveSpeed:7
 };
 
-function saveTasks(){
-    localStorage.setItem(
-        "tasks",
-        document.getElementById("taskList").innerHTML
+let obstacles = [];
+
+function startGame(){
+    gameStarted = true;
+
+    document.getElementById("startBtn")
+    .style.display = "none";
+}
+
+function createObstacle(){
+
+    obstacles.push({
+        x:Math.random()*330,
+        y:-120,
+        width:60,
+        height:100
+    });
+}
+
+setInterval(createObstacle,1200);
+
+const keys = {};
+
+document.addEventListener("keydown",e=>{
+    keys[e.key] = true;
+});
+
+document.addEventListener("keyup",e=>{
+    keys[e.key] = false;
+});
+
+function drawRoad(){
+
+    ctx.fillStyle="#555";
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    ctx.strokeStyle="white";
+    ctx.lineWidth=5;
+
+    for(let i=0;i<700;i+=40){
+
+        ctx.beginPath();
+
+        ctx.moveTo(200,i);
+
+        ctx.lineTo(200,i+20);
+
+        ctx.stroke();
+    }
+}
+
+function drawCar(){
+
+    ctx.fillStyle="red";
+
+    ctx.fillRect(
+        car.x,
+        car.y,
+        car.width,
+        car.height
     );
 }
 
-function addTask(){
+function drawObstacles(){
 
-    let taskInput =
-    document.getElementById("taskInput");
+    ctx.fillStyle="blue";
 
-    let dueDate =
-    document.getElementById("dueDate").value;
+    obstacles.forEach(o=>{
 
-    let taskText =
-    taskInput.value.trim();
+        ctx.fillRect(
+            o.x,
+            o.y,
+            o.width,
+            o.height
+        );
 
-    if(taskText === ""){
-        alert("Please enter a task");
+        o.y += speed;
+
+        if(o.y > 700){
+
+            score++;
+
+            document.getElementById("score")
+            .innerText =
+            "Score: " + score;
+        }
+    });
+
+    obstacles =
+    obstacles.filter(o=>o.y<800);
+}
+
+function collision(a,b){
+
+    return (
+
+        a.x < b.x+b.width &&
+
+        a.x+a.width > b.x &&
+
+        a.y < b.y+b.height &&
+
+        a.y+a.height > b.y
+
+    );
+}
+
+function update(){
+
+    if(keys["ArrowLeft"] &&
+       car.x > 0){
+
+        car.x -= car.moveSpeed;
+    }
+
+    if(keys["ArrowRight"] &&
+       car.x <
+       canvas.width-car.width){
+
+        car.x += car.moveSpeed;
+    }
+
+    if(keys["ArrowUp"]){
+
+        speed += 0.1;
+
+        if(speed > 15){
+            speed = 15;
+        }
+    }
+
+    if(keys["ArrowDown"]){
+
+        speed -= 0.2;
+
+        if(speed < 2){
+            speed = 2;
+        }
+    }
+
+    document.getElementById("speed")
+    .innerText =
+    "Speed: " + Math.floor(speed);
+
+    for(let o of obstacles){
+
+        if(collision(car,o)){
+
+            alert(
+            "Game Over!\nScore: "
+            + score
+            );
+
+            location.reload();
+        }
+    }
+}
+
+function gameLoop(){
+
+    if(!gameStarted){
+
+        requestAnimationFrame(
+        gameLoop
+        );
+
         return;
     }
 
-    let li =
-    document.createElement("li");
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
 
-    li.innerHTML = `
-        <span onclick="toggleComplete(this)">
-            ${taskText}
-            ${dueDate ? "(Due: " + dueDate + ")" : ""}
-        </span>
+    drawRoad();
 
-        <button
-        class="delete-btn"
-        onclick="deleteTask(this)">
-        Delete
-        </button>
-    `;
+    update();
 
-    document
-    .getElementById("taskList")
-    .appendChild(li);
+    drawCar();
 
-    taskInput.value = "";
-    document.getElementById("dueDate").value = "";
+    drawObstacles();
 
-    saveTasks();
-    updateCount();
+    requestAnimationFrame(
+    gameLoop
+    );
 }
 
-function deleteTask(button){
-    button.parentElement.remove();
-
-    saveTasks();
-    updateCount();
-}
-
-function toggleComplete(element){
-    element.classList.toggle("completed");
-
-    saveTasks();
-}
-
-function updateCount(){
-    document.getElementById("count")
-    .innerText =
-    document.querySelectorAll(
-    "#taskList li"
-    ).length;
-}
-
-function toggleDarkMode(){
-    document.body.classList.toggle("dark");
-}
+gameLoop();
 
 </script>
 
