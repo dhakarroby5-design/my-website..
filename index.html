@@ -1,1 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced To-Do App</title>
 
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#f4f4f4;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    transition:0.3s;
+}
+
+.container{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    width:400px;
+    box-shadow:0 0 10px rgba(0,0,0,0.2);
+}
+
+h2{
+    text-align:center;
+}
+
+input{
+    padding:10px;
+    margin:5px 0;
+}
+
+#taskInput{
+    width:60%;
+}
+
+button{
+    padding:10px;
+    cursor:pointer;
+}
+
+ul{
+    list-style:none;
+    padding:0;
+}
+
+li{
+    background:#eee;
+    margin-top:10px;
+    padding:10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-radius:5px;
+}
+
+.completed{
+    text-decoration: line-through;
+    color:gray;
+}
+
+.delete-btn{
+    background:red;
+    color:white;
+    border:none;
+    padding:5px 10px;
+}
+
+.dark{
+    background:#222;
+    color:white;
+}
+
+.dark .container{
+    background:#333;
+    color:white;
+}
+
+.dark li{
+    background:#555;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>To-Do App</h2>
+
+    <button onclick="toggleDarkMode()">🌙 Dark Mode</button>
+
+    <br><br>
+
+    <input type="text" id="taskInput" placeholder="Enter a task">
+
+    <input type="date" id="dueDate">
+
+    <button onclick="addTask()">Add</button>
+
+    <p>Total Tasks: <span id="count">0</span></p>
+
+    <ul id="taskList"></ul>
+</div>
+
+<script>
+
+window.onload = function(){
+    document.getElementById("taskList").innerHTML =
+    localStorage.getItem("tasks") || "";
+
+    updateCount();
+};
+
+function saveTasks(){
+    localStorage.setItem(
+        "tasks",
+        document.getElementById("taskList").innerHTML
+    );
+}
+
+function addTask(){
+
+    let taskInput =
+    document.getElementById("taskInput");
+
+    let dueDate =
+    document.getElementById("dueDate").value;
+
+    let taskText =
+    taskInput.value.trim();
+
+    if(taskText === ""){
+        alert("Please enter a task");
+        return;
+    }
+
+    let li =
+    document.createElement("li");
+
+    li.innerHTML = `
+        <span onclick="toggleComplete(this)">
+            ${taskText}
+            ${dueDate ? "(Due: " + dueDate + ")" : ""}
+        </span>
+
+        <button
+        class="delete-btn"
+        onclick="deleteTask(this)">
+        Delete
+        </button>
+    `;
+
+    document
+    .getElementById("taskList")
+    .appendChild(li);
+
+    taskInput.value = "";
+    document.getElementById("dueDate").value = "";
+
+    saveTasks();
+    updateCount();
+}
+
+function deleteTask(button){
+    button.parentElement.remove();
+
+    saveTasks();
+    updateCount();
+}
+
+function toggleComplete(element){
+    element.classList.toggle("completed");
+
+    saveTasks();
+}
+
+function updateCount(){
+    document.getElementById("count")
+    .innerText =
+    document.querySelectorAll(
+    "#taskList li"
+    ).length;
+}
+
+function toggleDarkMode(){
+    document.body.classList.toggle("dark");
+}
+
+</script>
+
+</body>
+</html>
