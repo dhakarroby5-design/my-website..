@@ -1,279 +1,160 @@
 <!DOCTYPE html>
-<html>
+<html lang="hi">
 <head>
-<meta charset="UTF-8">
-<title>Car Racing Game</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Amazon Affiliate Store</title>
+    <style>
+        /* बेसिक रीसेट और फॉन्ट */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f6f6f6; color: #333; padding: 20px; }
+        
+        /* हेडर स्टाइल */
+        header { text-align: center; margin-bottom: 30px; padding: 20px 0; background: #232f3e; color: white; border-radius: 8px; }
+        header h1 { font-size: 2rem; margin-bottom: 5px; }
+        header p { font-size: 1rem; color: #febd69; }
 
-<style>
-body{
-    margin:0;
-    overflow:hidden;
-    background:#222;
-    font-family:Arial;
-}
+        /* प्रोडक्ट्स ग्रिड (रिस्पॉन्सिव लेआउट) */
+        .product-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+            gap: 25px; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
 
-canvas{
-    display:block;
-    margin:auto;
-    background:#666;
-}
+        /* प्रोडक्ट कार्ड स्टाइल */
+        .product-card { 
+            background: #fff; 
+            border: 1px solid #e7e7e7; 
+            border-radius: 8px; 
+            padding: 20px; 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .product-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1); 
+        }
 
-#score{
-    position:absolute;
-    top:10px;
-    left:10px;
-    color:white;
-    font-size:24px;
-}
+        /* प्रोडक्ट इमेज */
+        .product-card img { 
+            max-width: 100%; 
+            height: 180px; 
+            object-fit: contain; 
+            margin-bottom: 15px; 
+        }
 
-#speed{
-    position:absolute;
-    top:45px;
-    left:10px;
-    color:white;
-    font-size:24px;
-}
+        /* प्रोडक्ट का नाम */
+        .product-card h3 { 
+            font-size: 1rem; 
+            color: #111; 
+            margin-bottom: 10px; 
+            height: 45px; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
 
-#startBtn{
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    padding:15px 30px;
-    font-size:24px;
-    cursor:pointer;
-}
-</style>
+        /* कीमत */
+        .price { 
+            font-size: 1.2rem; 
+            font-weight: bold; 
+            color: #b12704; 
+            margin-bottom: 15px; 
+        }
 
+        /* अमेज़न बटन स्टाइल */
+        .buy-btn { 
+            background: #ffd814; 
+            border: 1px solid #fcd200; 
+            padding: 10px 20px; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            text-decoration: none; 
+            color: #0f1111; 
+            font-weight: 500;
+            display: block; 
+            transition: background 0.2s;
+        }
+        .buy-btn:hover { background: #f7ca00; }
+        
+        /* लोडिंग टेक्स्ट */
+        .loading { text-align: center; font-size: 1.2rem; grid-column: 1 / -1; padding: 5px; }
+    </style>
 </head>
 <body>
 
-<div id="score">Score: 0</div>
-<div id="speed">Speed: 0</div>
+    <header>
+        <h1>My Recommended Products</h1>
+        <p>Best Deals Automatically Updated</p>
+    </header>
 
-<button id="startBtn" onclick="startGame()">
-Start Game
-</button>
+    <!-- प्रोडक्ट्स यहाँ लोड होंगे -->
+    <div class="product-grid" id="products-container">
+        <div class="loading">Products लोड हो रहे हैं, कृपया प्रतीक्षा करें...</div>
+    </div>
 
-<canvas id="gameCanvas" width="400" height="700"></canvas>
+    <script>
+        // महत्वपूर्ण: अपनी पब्लिश की हुई Google Sheets CSV का URL यहाँ डालें
+        const csvUrl = 'YOUR_GOOGLE_SHEET_CSV_URL_HERE';
 
-<script>
+        async function loadProducts() {
+            try {
+                const response = await fetch(csvUrl);
+                const data = await response.text();
+                
+                // CSV को लाइनों में तोड़ना
+                const rows = data.split('\n');
+                
+                const container = document.getElementById('products-container');
+                container.innerHTML = ''; // लोडिंग टेक्स्ट को हटाने के लिए
 
-const canvas =
-document.getElementById("gameCanvas");
+                // पहली रो (Header) को छोड़कर बाकी सब पर लूप चलाएं
+                for (let i = 1; i < rows.length; i++) {
+                    if (!rows[i].trim()) continue; // अगर कोई खाली लाइन है तो छोड़ दें
 
-const ctx =
-canvas.getContext("2d");
+                    // सिंपल CSV स्प्लिटिंग (अगर नाम में कॉमा न हो)
+                    const columns = rows[i].split(','); 
+                    if (columns.length < 5) continue;
 
-let score = 0;
-let speed = 5;
-let gameStarted = false;
+                    const name = columns[0].replace(/"/g, "").trim();
+                    const imageUrl = columns[1].trim();
+                    const price = columns[2].trim();
+                    const category = columns[3].trim();
+                    const amazonUrl = columns[4].trim();
 
-const car = {
-    x:170,
-    y:560,
-    width:60,
-    height:100,
-    moveSpeed:7
-};
+                    // आपके एफिलिएट टैग (robyselling-21) को लिंक में जोड़ना
+                    let finalUrl = amazonUrl;
+                    if (!finalUrl.includes('tag=robyselling-21')) {
+                        finalUrl = finalUrl.includes('?') ? `${finalUrl}&tag=robyselling-21` : `${finalUrl}?tag=robyselling-21`;
+                    }
 
-let obstacles = [];
-
-function startGame(){
-    gameStarted = true;
-
-    document.getElementById("startBtn")
-    .style.display = "none";
-}
-
-function createObstacle(){
-
-    obstacles.push({
-        x:Math.random()*330,
-        y:-120,
-        width:60,
-        height:100
-    });
-}
-
-setInterval(createObstacle,1200);
-
-const keys = {};
-
-document.addEventListener("keydown",e=>{
-    keys[e.key] = true;
-});
-
-document.addEventListener("keyup",e=>{
-    keys[e.key] = false;
-});
-
-function drawRoad(){
-
-    ctx.fillStyle="#555";
-    ctx.fillRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-    ctx.strokeStyle="white";
-    ctx.lineWidth=5;
-
-    for(let i=0;i<700;i+=40){
-
-        ctx.beginPath();
-
-        ctx.moveTo(200,i);
-
-        ctx.lineTo(200,i+20);
-
-        ctx.stroke();
-    }
-}
-
-function drawCar(){
-
-    ctx.fillStyle="red";
-
-    ctx.fillRect(
-        car.x,
-        car.y,
-        car.width,
-        car.height
-    );
-}
-
-function drawObstacles(){
-
-    ctx.fillStyle="blue";
-
-    obstacles.forEach(o=>{
-
-        ctx.fillRect(
-            o.x,
-            o.y,
-            o.width,
-            o.height
-        );
-
-        o.y += speed;
-
-        if(o.y > 700){
-
-            score++;
-
-            document.getElementById("score")
-            .innerText =
-            "Score: " + score;
+                    // प्रोडक्ट कार्ड का HTML ढांचा
+                    const cardHtml = `
+                        <div class="product-card" data-category="${category}">
+                            <img src="${imageUrl}" alt="${name}" onerror="this.src='https://via.placeholder.com/150?text=No+Image';">
+                            <h3>${name}</h3>
+                            <div class="price">${price}</div>
+                            <a href="${finalUrl}" target="_blank" rel="noopener noreferrer" class="buy-btn">Buy on Amazon</a>
+                        </div>
+                    `;
+                    container.innerHTML += cardHtml;
+                }
+            } catch (error) {
+                console.error("Error loading products:", error);
+                document.getElementById('products-container').innerHTML = '<div class="loading" style="color:red;">Products लोड करने में समस्या आई। कृपया CSV URL चेक करें।</div>';
+            }
         }
-    });
 
-    obstacles =
-    obstacles.filter(o=>o.y<800);
-}
-
-function collision(a,b){
-
-    return (
-
-        a.x < b.x+b.width &&
-
-        a.x+a.width > b.x &&
-
-        a.y < b.y+b.height &&
-
-        a.y+a.height > b.y
-
-    );
-}
-
-function update(){
-
-    if(keys["ArrowLeft"] &&
-       car.x > 0){
-
-        car.x -= car.moveSpeed;
-    }
-
-    if(keys["ArrowRight"] &&
-       car.x <
-       canvas.width-car.width){
-
-        car.x += car.moveSpeed;
-    }
-
-    if(keys["ArrowUp"]){
-
-        speed += 0.1;
-
-        if(speed > 15){
-            speed = 15;
-        }
-    }
-
-    if(keys["ArrowDown"]){
-
-        speed -= 0.2;
-
-        if(speed < 2){
-            speed = 2;
-        }
-    }
-
-    document.getElementById("speed")
-    .innerText =
-    "Speed: " + Math.floor(speed);
-
-    for(let o of obstacles){
-
-        if(collision(car,o)){
-
-            alert(
-            "Game Over!\nScore: "
-            + score
-            );
-
-            location.reload();
-        }
-    }
-}
-
-function gameLoop(){
-
-    if(!gameStarted){
-
-        requestAnimationFrame(
-        gameLoop
-        );
-
-        return;
-    }
-
-    ctx.clearRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-    drawRoad();
-
-    update();
-
-    drawCar();
-
-    drawObstacles();
-
-    requestAnimationFrame(
-    gameLoop
-    );
-}
-
-gameLoop();
-
-</script>
-
+        // पेज लोड होते ही फंक्शन रन करें
+        window.onload = loadProducts;
+    </script>
 </body>
 </html>
