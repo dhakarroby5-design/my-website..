@@ -1,64 +1,183 @@
->
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Live Audio Stream</title>
+    <!-- PeerJS CDN for easy Peer-to-Peer WebRTC setup -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h2 { margin-top: 0; color: #333; }
+        .status-box {
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin: 15px 0;
+            background-color: #e9ecef;
+            color: #495057;
+        }
+        .status-active {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #gray;
+            margin-right: 5px;
+        }
+        .indicator-on { background-color: #28a745; animation: blink 1.5s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-start { background-color: #007bff; color: white; }
+        .btn-stop { background-color: #dc3545; color: white; display: none; }
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            text-align: center;
+        }
+        audio { width: 100%; margin-top: 15px; }
+    </style>
+</head>
+<body>
 
-    <!-- प्रोडक्ट्स यहाँ लोड होंगे -->
-    <div class="product-grid" id="products-container">
-        <div class="loading">Products लोड हो रहे हैं, कृपया प्रतीक्षा करें...</div>
+<div class="card">
+    <h2>Live Audio Sharing</h2>
+    
+    <div id="statusBox" class="status-box">
+        <span id="indicator" class="indicator"></span>
+        <span id="statusText">Status: Idle</span>
     </div>
 
-    <script>
-        // महत्वपूर्ण: अपनी पब्लिश की हुई Google Sheets CSV का URL यहाँ डालें
-        const csvUrl = 'YOUR_GOOGLE_SHEET_CSV_URL_HERE';
+    <!-- Receiver ID Section -->
+    <p>Aapka Unique Peer ID:</p>
+    <input type="text" id="myId" readonly placeholder="Connecting to server...">
 
-        async function loadProducts() {
-            try {
-                const response = await fetch(csvUrl);
-                const data = await response.text();
-                
-                // CSV को लाइनों में तोड़ना
-                const rows = data.split('\n');
-                
-                const container = document.getElementById('products-container');
-                container.innerHTML = ''; // लोडिंग टेक्स्ट को हटाने के लिए
+    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
 
-                // पहली रो (Header) को छोड़कर बाकी सब पर लूप चलाएं
-                for (let i = 1; i < rows.length; i++) {
-                    if (!rows[i].trim()) continue; // अगर कोई खाली लाइन है तो छोड़ दें
+    <!-- Sender Connect Section -->
+    <div id="senderControls">
+        <p>Aapko jis phone me sunna hai, uska ID yahan dalein:</p>
+        <input type="text" id="remoteId" placeholder="Receiver ka Peer ID dalein">
+        <button id="startBtn" class="btn-start" onclick="startStreaming()">Mic On Karein & Audio Bhejein</button>
+        <button id="stopBtn" class="btn-stop" onclick="stopStreaming()">Audio Sharing Band Karein</button>
+    </div>
 
-                    // सिंपल CSV स्प्लिटिंग (अगर नाम में कॉमा न हो)
-                    const columns = rows[i].split(','); 
-                    if (columns.length < 5) continue;
+    <!-- Audio Player for Receiver -->
+    <audio id="remoteAudio" autoplay controls></audio>
+</div>
 
-                    const name = columns[0].replace(/"/g, "").trim();
-                    const imageUrl = columns[1].trim();
-                    const price = columns[2].trim();
-                    const category = columns[3].trim();
-                    const amazonUrl = columns[4].trim();
+<script>
+    let peer = new Peer(); // Free PeerJS Cloud Server for WebRTC signaling
+    let localStream = null;
+    let currentCall = null;
 
-                    // आपके एफिलिएट टैग (robyselling-21) को लिंक में जोड़ना
-                    let finalUrl = amazonUrl;
-                    if (!finalUrl.includes('tag=robyselling-21')) {
-                        finalUrl = finalUrl.includes('?') ? `${finalUrl}&tag=robyselling-21` : `${finalUrl}?tag=robyselling-21`;
-                    }
+    // Show Peer ID when generated
+    peer.on('open', (id) => {
+        document.getElementById('myId').value = id;
+        document.getElementById('statusText').innerText = "Status: Ready";
+    });
 
-                    // प्रोडक्ट कार्ड का HTML ढांचा
-                    const cardHtml = `
-                        <div class="product-card" data-category="${category}">
-                            <img src="${imageUrl}" alt="${name}" onerror="this.src='https://via.placeholder.com/150?text=No+Image';">
-                            <h3>${name}</h3>
-                            <div class="price">${price}</div>
-                            <a href="${finalUrl}" target="_blank" rel="noopener noreferrer" class="buy-btn">Buy on Amazon</a>
-                        </div>
-                    `;
-                    container.innerHTML += cardHtml;
-                }
-            } catch (error) {
-                console.error("Error loading products:", error);
-                document.getElementById('products-container').innerHTML = '<div class="loading" style="color:red;">Products लोड करने में समस्या आई। कृपया CSV URL चेक करें।</div>';
-            }
+    // 1. RECEIVER LOGIC: Jab samne se call aayegi
+    peer.on('call', (call) => {
+        call.answer(); // Automatic answer for receiving stream
+        call.on('stream', (remoteStream) => {
+            const audioElement = document.getElementById('remoteAudio');
+            audioElement.srcObject = remoteStream;
+            
+            updateStatus("🔊 Audio Receiving Live...", true);
+        });
+    });
+
+    // 2. SENDER LOGIC: Jab user Mic Permission dekar stream shuru karega
+    async function startStreaming() {
+        const remotePeerId = document.getElementById('remoteId').value;
+        if (!remotePeerId) {
+            alert("Kripya Receiver ka Peer ID dalein!");
+            return;
         }
 
-        // पेज लोड होते ही फंक्शन रन करें
-        window.onload = loadProducts;
-    </script>
+        try {
+            // Ask for microphone permission
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            
+            // WebRTC Call to Remote ID
+            currentCall = peer.call(remotePeerId, localStream);
+
+            // Update UI to show Mic is Active
+            updateStatus("🔴 Microphone Active (Streaming...)", true);
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('stopBtn').style.display = 'block';
+
+        } catch (err) {
+            alert("Microphone permission nahi mili ya error aaya: " + err.message);
+            console.error(err);
+        }
+    }
+
+    // 3. STOP LOGIC: Manual Stop Function
+    function stopStreaming() {
+        if (localStream) {
+            localStream.getTracks().forEach(track => track.stop()); // Stop Mic
+            localStream = null;
+        }
+        if (currentCall) {
+            currentCall.close();
+        }
+        
+        updateStatus("Status: Stopped", false);
+        document.getElementById('startBtn').style.display = 'block';
+        document.getElementById('stopBtn').style.display = 'none';
+    }
+
+    function updateStatus(text, isActive) {
+        document.getElementById('statusText').innerText = text;
+        const statusBox = document.getElementById('statusBox');
+        const indicator = document.getElementById('indicator');
+        
+        if (isActive) {
+            statusBox.classList.add('status-active');
+            indicator.classList.add('indicator-on');
+        } else {
+            statusBox.classList.remove('status-active');
+            indicator.classList.remove('indicator-on');
+        }
+    }
+</script>
+
 </body>
 </html>
