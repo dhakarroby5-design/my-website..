@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WhatsApp Web Clone</title>
-  <!-- Google Font & FontAwesome Icons -->
+  <title>WhatsApp Web</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -16,7 +15,7 @@
       font-family: 'Roboto', sans-serif;
     }
     body {
-      background-color: #d1d7db;
+      background-color: #0b141a;
       height: 100vh;
       display: flex;
       justify-content: center;
@@ -24,30 +23,37 @@
     }
     .app-container {
       width: 100%;
-      max-width: 1200px;
-      height: 95vh;
-      background: #ffffff;
+      height: 100vh;
+      background: #111b21;
       display: flex;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
-      border-radius: 8px;
+      position: relative;
       overflow: hidden;
+      color: #e9edef;
     }
 
     /* Sidebar Section */
     .sidebar {
-      width: 35%;
-      border-right: 1px solid #e9edef;
+      width: 100%;
+      height: 100%;
       display: flex;
       flex-direction: column;
-      background: #fff;
+      background: #111b21;
+      border-right: 1px solid #222d34;
+      z-index: 1;
     }
+    
+    @media (min-width: 768px) {
+      .app-container { max-width: 1200px; height: 95vh; border-radius: 8px; }
+      .sidebar { width: 35%; }
+      .chat-window { display: flex !important; width: 65%; }
+    }
+
     .header {
-      background-color: #f0f2f5;
+      background-color: #202c33;
       padding: 10px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid #d1d7db;
     }
     .user-avatar {
       width: 40px;
@@ -61,7 +67,7 @@
       font-weight: bold;
     }
     .header-icons i {
-      color: #54656f;
+      color: #aebac1;
       font-size: 18px;
       margin-left: 18px;
       cursor: pointer;
@@ -70,8 +76,8 @@
     /* Navigation Tabs */
     .tabs {
       display: flex;
-      background: #008069;
-      color: #aebac1;
+      background: #111b21;
+      border-bottom: 1px solid #222d34;
     }
     .tab-btn {
       flex: 1;
@@ -79,39 +85,53 @@
       text-align: center;
       cursor: pointer;
       font-weight: 500;
-      color: #e9edef;
+      color: #8696a0;
       border-bottom: 3px solid transparent;
       transition: 0.2s;
     }
     .tab-btn.active {
-      color: #ffffff;
-      border-bottom: 3px solid #ffffff;
+      color: #00a884;
+      border-bottom: 3px solid #00a884;
     }
 
-    /* Search Box */
+    /* Search Box & Contacts Button */
     .search-box {
-      background: #f0f2f5;
       padding: 8px 12px;
-      border-bottom: 1px solid #e9edef;
-    }
-    .search-input {
-      width: 100%;
-      padding: 8px 12px 8px 35px;
-      border-radius: 8px;
-      border: none;
-      background: #ffffff;
-      outline: none;
-      font-size: 14px;
+      background: #111b21;
+      display: flex;
+      gap: 10px;
     }
     .search-wrapper {
       position: relative;
+      flex: 1;
+    }
+    .search-input {
+      width: 100%;
+      padding: 8px 12px 8px 38px;
+      border-radius: 8px;
+      border: none;
+      background: #202c33;
+      color: #e9edef;
+      outline: none;
+      font-size: 14px;
     }
     .search-wrapper i {
       position: absolute;
-      left: 10px;
+      left: 12px;
       top: 10px;
-      color: #54656f;
-      font-size: 14px;
+      color: #8696a0;
+    }
+    .btn-sync {
+      background: #00a884;
+      border: none;
+      color: #fff;
+      padding: 0 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
 
     /* List Area */
@@ -119,28 +139,22 @@
       flex: 1;
       overflow-y: auto;
     }
-    .tab-panel {
-      display: none;
-    }
-    .tab-panel.active {
-      display: block;
-    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
 
     .item-card {
       display: flex;
       align-items: center;
       padding: 12px 16px;
       cursor: pointer;
-      border-bottom: 1px solid #f0f2f5;
+      border-bottom: 1px solid #222d34;
     }
-    .item-card:hover {
-      background-color: #f5f6f6;
-    }
+    .item-card:hover { background-color: #202c33; }
     .item-avatar {
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: #ccc;
+      background: #6b7c85;
       margin-right: 15px;
       display: flex;
       align-items: center;
@@ -148,55 +162,54 @@
       color: white;
       font-size: 20px;
     }
-    .item-details {
-      flex: 1;
-    }
+    .item-details { flex: 1; }
     .item-title {
       font-weight: 500;
-      color: #111b21;
+      color: #e9edef;
       margin-bottom: 4px;
       display: flex;
       justify-content: space-between;
     }
-    .item-time {
-      font-size: 12px;
-      color: #667781;
-      font-weight: normal;
-    }
+    .item-time { font-size: 12px; color: #8696a0; }
     .item-subtitle {
       font-size: 13px;
-      color: #667781;
+      color: #8696a0;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    /* Status Specific */
-    .status-ring {
-      border: 2px solid #00a884;
-      padding: 2px;
-    }
-
-    /* Main Chat Window */
+    /* Chat Window */
     .chat-window {
-      width: 65%;
-      display: flex;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
       flex-direction: column;
-      background-color: #efeae2;
-      background-image: radial-gradient(#d1d7db 1px, transparent 0);
-      background-size: 16px 16px;
+      background-color: #0b141a;
+      z-index: 10;
     }
+    .chat-window.active { display: flex; }
+
     .chat-header {
-      background: #f0f2f5;
+      background: #202c33;
       padding: 10px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid #d1d7db;
     }
     .chat-header-info {
       display: flex;
       align-items: center;
+      gap: 10px;
+    }
+    .back-btn {
+      color: #aebac1;
+      font-size: 18px;
+      cursor: pointer;
+      margin-right: 5px;
     }
     .chat-messages {
       flex: 1;
@@ -205,34 +218,24 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+      background-image: radial-gradient(#222d34 1px, transparent 0);
+      background-size: 16px 16px;
     }
     .message {
-      max-width: 60%;
+      max-width: 75%;
       padding: 8px 12px;
       border-radius: 8px;
       font-size: 14px;
       position: relative;
       word-wrap: break-word;
     }
-    .msg-incoming {
-      background: #ffffff;
-      align-self: flex-start;
-    }
-    .msg-outgoing {
-      background: #d9fdd3;
-      align-self: flex-end;
-    }
-    .msg-time {
-      font-size: 10px;
-      color: #667781;
-      float: right;
-      margin-top: 4px;
-      margin-left: 10px;
-    }
+    .msg-incoming { background: #202c33; align-self: flex-start; color: #e9edef; }
+    .msg-outgoing { background: #005c4b; align-self: flex-end; color: #e9edef; }
+    .msg-time { font-size: 10px; color: #8696a0; float: right; margin-top: 4px; margin-left: 10px; }
 
     /* Input Bar */
     .chat-input-bar {
-      background: #f0f2f5;
+      background: #202c33;
       padding: 10px 16px;
       display: flex;
       align-items: center;
@@ -243,29 +246,19 @@
       padding: 10px 16px;
       border-radius: 8px;
       border: none;
+      background: #2a3942;
+      color: #e9edef;
       outline: none;
       font-size: 15px;
     }
-    .chat-input-bar i {
-      color: #54656f;
-      font-size: 20px;
-      cursor: pointer;
-    }
-    .send-btn {
-      color: #00a884 !important;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .sidebar { width: 100%; }
-      .chat-window { display: none; }
-    }
+    .chat-input-bar i { color: #8696a0; font-size: 20px; cursor: pointer; }
+    .send-btn { color: #00a884 !important; }
   </style>
 </head>
 <body>
 
   <div class="app-container">
-    <!-- LEFT SIDEBAR -->
+    <!-- SIDEBAR / MAIN TAB VIEW -->
     <div class="sidebar">
       <div class="header">
         <div class="user-avatar">Me</div>
@@ -284,30 +277,33 @@
         <div class="tab-btn" onclick="switchTab('groups')">GROUPS</div>
       </div>
 
-      <!-- Search Input -->
+      <!-- Search & Sync Contacts -->
       <div class="search-box">
         <div class="search-wrapper">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" class="search-input" placeholder="Search or start new chat">
+          <input type="text" class="search-input" id="search-input" placeholder="Search or type number..." oninput="filterChats()">
         </div>
+        <button class="btn-sync" onclick="syncPhoneContacts()"><i class="fa-solid fa-address-book"></i> Sync</button>
       </div>
 
-      <!-- Dynamic Tab Panels -->
+      <!-- Panels -->
       <div class="list-content">
         <!-- CHATS PANEL -->
         <div id="chats-panel" class="tab-panel active">
-          <div class="item-card" onclick="openChat('Rahul Sharma')">
-            <div class="item-avatar" style="background:#25D366"><i class="fa-solid fa-user"></i></div>
-            <div class="item-details">
-              <div class="item-title">Rahul Sharma <span class="item-time">10:45 AM</span></div>
-              <div class="item-subtitle">Haan bhai, kya plan hai aaj ka?</div>
+          <div id="contact-list">
+            <div class="item-card" onclick="openChat('Rahul Sharma')">
+              <div class="item-avatar" style="background:#25D366"><i class="fa-solid fa-user"></i></div>
+              <div class="item-details">
+                <div class="item-title">Rahul Sharma <span class="item-time">10:45 AM</span></div>
+                <div class="item-subtitle">Haan bhai, kya plan hai aaj ka?</div>
+              </div>
             </div>
-          </div>
-          <div class="item-card" onclick="openChat('Priya Verma')">
-            <div class="item-avatar" style="background:#e91e63"><i class="fa-solid fa-user"></i></div>
-            <div class="item-details">
-              <div class="item-title">Priya Verma <span class="item-time">Yesterday</span></div>
-              <div class="item-subtitle">Project file send kar di hai.</div>
+            <div class="item-card" onclick="openChat('Priya Verma')">
+              <div class="item-avatar" style="background:#e91e63"><i class="fa-solid fa-user"></i></div>
+              <div class="item-details">
+                <div class="item-title">Priya Verma <span class="item-time">Yesterday</span></div>
+                <div class="item-subtitle">Project file send kar di hai.</div>
+              </div>
             </div>
           </div>
         </div>
@@ -315,78 +311,54 @@
         <!-- STATUS PANEL -->
         <div id="status-panel" class="tab-panel">
           <div class="item-card">
-            <div class="item-avatar status-ring" style="background:#3498db"><i class="fa-solid fa-user"></i></div>
+            <div class="item-avatar" style="background:#3498db; border:2px solid #00a884;"><i class="fa-solid fa-user"></i></div>
             <div class="item-details">
               <div class="item-title">Rahul Sharma</div>
               <div class="item-subtitle">Today, 9:15 AM</div>
-            </div>
-          </div>
-          <div class="item-card">
-            <div class="item-avatar status-ring" style="background:#9b59b6"><i class="fa-solid fa-user"></i></div>
-            <div class="item-details">
-              <div class="item-title">Aman Gupta</div>
-              <div class="item-subtitle">Yesterday, 11:30 PM</div>
             </div>
           </div>
         </div>
 
         <!-- GROUPS PANEL -->
         <div id="groups-panel" class="tab-panel">
-          <div class="item-card" onclick="openChat('College Developers Group')">
+          <div class="item-card" onclick="openChat('College Group')">
             <div class="item-avatar" style="background:#f39c12"><i class="fa-solid fa-users"></i></div>
             <div class="item-details">
-              <div class="item-title">College Developers <span class="item-time">11:00 AM</span></div>
-              <div class="item-subtitle">Aman: GitHub repos update kar do.</div>
-            </div>
-          </div>
-          <div class="item-card" onclick="openChat('Weekend Trip Group')">
-            <div class="item-avatar" style="background:#1abc9c"><i class="fa-solid fa-users"></i></div>
-            <div class="item-details">
-              <div class="item-title">Weekend Trip <span class="item-time">08:20 AM</span></div>
-              <div class="item-subtitle">Rohan: Location finalized!</div>
+              <div class="item-title">College Group <span class="item-time">11:00 AM</span></div>
+              <div class="item-subtitle">Aman: Class cancellation notice.</div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- RIGHT CHAT WINDOW -->
-    <div class="chat-window">
+    <!-- CHAT SCREEN WINDOW -->
+    <div class="chat-window" id="chat-window">
       <div class="chat-header">
         <div class="chat-header-info">
-          <div class="item-avatar" style="background:#00a884; width:38px; height:38px; font-size:16px;">
-            <i class="fa-solid fa-user" id="active-chat-icon"></i>
+          <i class="fa-solid fa-arrow-left back-btn" onclick="closeChat()"></i>
+          <div class="item-avatar" style="background:#00a884; width:36px; height:36px; font-size:14px;">
+            <i class="fa-solid fa-user"></i>
           </div>
           <div>
-            <h4 id="chat-title" style="color:#111b21;">Rahul Sharma</h4>
-            <span style="font-size:12px; color:#667781;">Online</span>
+            <h4 id="chat-title" style="color:#e9edef; font-size:15px;">Rahul Sharma</h4>
+            <span style="font-size:11px; color:#8696a0;">online</span>
           </div>
         </div>
         <div class="header-icons">
-          <i class="fa-solid fa-video" title="Video Call"></i>
-          <i class="fa-solid fa-phone" title="Voice Call"></i>
-          <i class="fa-solid fa-magnifying-glass"></i>
+          <i class="fa-solid fa-video"></i>
+          <i class="fa-solid fa-phone"></i>
           <i class="fa-solid fa-ellipsis-vertical"></i>
         </div>
       </div>
 
-      <!-- Messages Stream -->
       <div class="chat-messages" id="message-container">
         <div class="message msg-incoming">
-          Hello! Kaisa hai?
+          Hello!
           <span class="msg-time">10:42 AM</span>
-        </div>
-        <div class="message msg-outgoing">
-          Bas badhiya! Tu bata?
-          <span class="msg-time">10:44 AM</span>
-        </div>
-        <div class="message msg-incoming">
-          Haan bhai, kya plan hai aaj ka?
-          <span class="msg-time">10:45 AM</span>
         </div>
       </div>
 
-      <!-- Input Message Field -->
       <div class="chat-input-bar">
         <i class="fa-regular fa-face-smile"></i>
         <i class="fa-solid fa-paperclip"></i>
@@ -397,28 +369,22 @@
   </div>
 
   <script>
-    // Tab Switch Logic
     function switchTab(tabName) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
-
       event.target.classList.add('active');
       document.getElementById(tabName + '-panel').classList.add('active');
     }
 
-    // Chat Switcher Logic
     function openChat(name) {
       document.getElementById('chat-title').innerText = name;
-      const msgContainer = document.getElementById('message-container');
-      msgContainer.innerHTML = `
-        <div class="message msg-incoming">
-          Welcome to ${name}!
-          <span class="msg-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-        </div>
-      `;
+      document.getElementById('chat-window').classList.add('active');
     }
 
-    // Send Message Logic
+    function closeChat() {
+      document.getElementById('chat-window').classList.remove('active');
+    }
+
     function sendMessage() {
       const input = document.getElementById('message-input');
       const text = input.value.trim();
@@ -437,10 +403,52 @@
     }
 
     function handleKeyPress(e) {
-      if (e.key === 'Enter') {
-        sendMessage();
+      if (e.key === 'Enter') sendMessage();
+    }
+
+    // Phone Contacts Access API (Supported on Chrome/Edge on Mobile)
+    async function syncPhoneContacts() {
+      const props = ['name', 'tel'];
+      const opts = {multiple: true};
+      
+      if ('contacts' in navigator && 'ContactsManager' in window) {
+        try {
+          const contacts = await navigator.contacts.select(props, opts);
+          if (contacts.length) {
+            const list = document.getElementById('contact-list');
+            contacts.forEach(c => {
+              const name = c.name ? c.name[0] : (c.tel ? c.tel[0] : 'Unknown');
+              const card = document.createElement('div');
+              card.className = 'item-card';
+              card.onclick = () => openChat(name);
+              card.innerHTML = `
+                <div class="item-avatar" style="background:#00a884"><i class="fa-solid fa-user"></i></div>
+                <div class="item-details">
+                  <div class="item-title">${name} <span class="item-time">New</span></div>
+                  <div class="item-subtitle">${c.tel ? c.tel[0] : ''}</div>
+                </div>
+              `;
+              list.prepend(card);
+            });
+            alert('Contacts Synced successfully!');
+          }
+        } catch (err) {
+          alert('Failed to access contacts.');
+        }
+      } else {
+        alert('Aapke browser me direct Contacts Access capability nahi hai. Chrome browser me try karein.');
       }
+    }
+
+    function filterChats() {
+      const query = document.getElementById('search-input').value.toLowerCase();
+      const cards = document.querySelectorAll('#chats-panel .item-card');
+      cards.forEach(card => {
+        const name = card.querySelector('.item-title').innerText.toLowerCase();
+        card.style.display = name.includes(query) ? 'flex' : 'none';
+      });
     }
   </script>
 </body>
 </html>
+
