@@ -1,183 +1,446 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebRTC Live Audio Stream</title>
-    <!-- PeerJS CDN for easy Peer-to-Peer WebRTC setup -->
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .card {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-        }
-        h2 { margin-top: 0; color: #333; }
-        .status-box {
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: bold;
-            margin: 15px 0;
-            background-color: #e9ecef;
-            color: #495057;
-        }
-        .status-active {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background-color: #gray;
-            margin-right: 5px;
-        }
-        .indicator-on { background-color: #28a745; animation: blink 1.5s infinite; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-        
-        button {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .btn-start { background-color: #007bff; color: white; }
-        .btn-stop { background-color: #dc3545; color: white; display: none; }
-        input {
-            width: 90%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            text-align: center;
-        }
-        audio { width: 100%; margin-top: 15px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp Web Clone</title>
+  <!-- Google Font & FontAwesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+    }
+    body {
+      background-color: #d1d7db;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .app-container {
+      width: 100%;
+      max-width: 1200px;
+      height: 95vh;
+      background: #ffffff;
+      display: flex;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    /* Sidebar Section */
+    .sidebar {
+      width: 35%;
+      border-right: 1px solid #e9edef;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+    }
+    .header {
+      background-color: #f0f2f5;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #d1d7db;
+    }
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #00a884;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    .header-icons i {
+      color: #54656f;
+      font-size: 18px;
+      margin-left: 18px;
+      cursor: pointer;
+    }
+
+    /* Navigation Tabs */
+    .tabs {
+      display: flex;
+      background: #008069;
+      color: #aebac1;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 12px 0;
+      text-align: center;
+      cursor: pointer;
+      font-weight: 500;
+      color: #e9edef;
+      border-bottom: 3px solid transparent;
+      transition: 0.2s;
+    }
+    .tab-btn.active {
+      color: #ffffff;
+      border-bottom: 3px solid #ffffff;
+    }
+
+    /* Search Box */
+    .search-box {
+      background: #f0f2f5;
+      padding: 8px 12px;
+      border-bottom: 1px solid #e9edef;
+    }
+    .search-input {
+      width: 100%;
+      padding: 8px 12px 8px 35px;
+      border-radius: 8px;
+      border: none;
+      background: #ffffff;
+      outline: none;
+      font-size: 14px;
+    }
+    .search-wrapper {
+      position: relative;
+    }
+    .search-wrapper i {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      color: #54656f;
+      font-size: 14px;
+    }
+
+    /* List Area */
+    .list-content {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .tab-panel {
+      display: none;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+
+    .item-card {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f2f5;
+    }
+    .item-card:hover {
+      background-color: #f5f6f6;
+    }
+    .item-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #ccc;
+      margin-right: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+    }
+    .item-details {
+      flex: 1;
+    }
+    .item-title {
+      font-weight: 500;
+      color: #111b21;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .item-time {
+      font-size: 12px;
+      color: #667781;
+      font-weight: normal;
+    }
+    .item-subtitle {
+      font-size: 13px;
+      color: #667781;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Status Specific */
+    .status-ring {
+      border: 2px solid #00a884;
+      padding: 2px;
+    }
+
+    /* Main Chat Window */
+    .chat-window {
+      width: 65%;
+      display: flex;
+      flex-direction: column;
+      background-color: #efeae2;
+      background-image: radial-gradient(#d1d7db 1px, transparent 0);
+      background-size: 16px 16px;
+    }
+    .chat-header {
+      background: #f0f2f5;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #d1d7db;
+    }
+    .chat-header-info {
+      display: flex;
+      align-items: center;
+    }
+    .chat-messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .message {
+      max-width: 60%;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      position: relative;
+      word-wrap: break-word;
+    }
+    .msg-incoming {
+      background: #ffffff;
+      align-self: flex-start;
+    }
+    .msg-outgoing {
+      background: #d9fdd3;
+      align-self: flex-end;
+    }
+    .msg-time {
+      font-size: 10px;
+      color: #667781;
+      float: right;
+      margin-top: 4px;
+      margin-left: 10px;
+    }
+
+    /* Input Bar */
+    .chat-input-bar {
+      background: #f0f2f5;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .chat-input-bar input {
+      flex: 1;
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      font-size: 15px;
+    }
+    .chat-input-bar i {
+      color: #54656f;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .send-btn {
+      color: #00a884 !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar { width: 100%; }
+      .chat-window { display: none; }
+    }
+  </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>Live Audio Sharing</h2>
-    
-    <div id="statusBox" class="status-box">
-        <span id="indicator" class="indicator"></span>
-        <span id="statusText">Status: Idle</span>
+  <div class="app-container">
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar">
+      <div class="header">
+        <div class="user-avatar">Me</div>
+        <div class="header-icons">
+          <i class="fa-solid fa-users" title="Communities"></i>
+          <i class="fa-solid fa-circle-notch" title="Status"></i>
+          <i class="fa-solid fa-message" title="New Chat"></i>
+          <i class="fa-solid fa-ellipsis-vertical" title="Menu"></i>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="tabs">
+        <div class="tab-btn active" onclick="switchTab('chats')">CHATS</div>
+        <div class="tab-btn" onclick="switchTab('status')">STATUS</div>
+        <div class="tab-btn" onclick="switchTab('groups')">GROUPS</div>
+      </div>
+
+      <!-- Search Input -->
+      <div class="search-box">
+        <div class="search-wrapper">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" class="search-input" placeholder="Search or start new chat">
+        </div>
+      </div>
+
+      <!-- Dynamic Tab Panels -->
+      <div class="list-content">
+        <!-- CHATS PANEL -->
+        <div id="chats-panel" class="tab-panel active">
+          <div class="item-card" onclick="openChat('Rahul Sharma')">
+            <div class="item-avatar" style="background:#25D366"><i class="fa-solid fa-user"></i></div>
+            <div class="item-details">
+              <div class="item-title">Rahul Sharma <span class="item-time">10:45 AM</span></div>
+              <div class="item-subtitle">Haan bhai, kya plan hai aaj ka?</div>
+            </div>
+          </div>
+          <div class="item-card" onclick="openChat('Priya Verma')">
+            <div class="item-avatar" style="background:#e91e63"><i class="fa-solid fa-user"></i></div>
+            <div class="item-details">
+              <div class="item-title">Priya Verma <span class="item-time">Yesterday</span></div>
+              <div class="item-subtitle">Project file send kar di hai.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STATUS PANEL -->
+        <div id="status-panel" class="tab-panel">
+          <div class="item-card">
+            <div class="item-avatar status-ring" style="background:#3498db"><i class="fa-solid fa-user"></i></div>
+            <div class="item-details">
+              <div class="item-title">Rahul Sharma</div>
+              <div class="item-subtitle">Today, 9:15 AM</div>
+            </div>
+          </div>
+          <div class="item-card">
+            <div class="item-avatar status-ring" style="background:#9b59b6"><i class="fa-solid fa-user"></i></div>
+            <div class="item-details">
+              <div class="item-title">Aman Gupta</div>
+              <div class="item-subtitle">Yesterday, 11:30 PM</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GROUPS PANEL -->
+        <div id="groups-panel" class="tab-panel">
+          <div class="item-card" onclick="openChat('College Developers Group')">
+            <div class="item-avatar" style="background:#f39c12"><i class="fa-solid fa-users"></i></div>
+            <div class="item-details">
+              <div class="item-title">College Developers <span class="item-time">11:00 AM</span></div>
+              <div class="item-subtitle">Aman: GitHub repos update kar do.</div>
+            </div>
+          </div>
+          <div class="item-card" onclick="openChat('Weekend Trip Group')">
+            <div class="item-avatar" style="background:#1abc9c"><i class="fa-solid fa-users"></i></div>
+            <div class="item-details">
+              <div class="item-title">Weekend Trip <span class="item-time">08:20 AM</span></div>
+              <div class="item-subtitle">Rohan: Location finalized!</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Receiver ID Section -->
-    <p>Aapka Unique Peer ID:</p>
-    <input type="text" id="myId" readonly placeholder="Connecting to server...">
+    <!-- RIGHT CHAT WINDOW -->
+    <div class="chat-window">
+      <div class="chat-header">
+        <div class="chat-header-info">
+          <div class="item-avatar" style="background:#00a884; width:38px; height:38px; font-size:16px;">
+            <i class="fa-solid fa-user" id="active-chat-icon"></i>
+          </div>
+          <div>
+            <h4 id="chat-title" style="color:#111b21;">Rahul Sharma</h4>
+            <span style="font-size:12px; color:#667781;">Online</span>
+          </div>
+        </div>
+        <div class="header-icons">
+          <i class="fa-solid fa-video" title="Video Call"></i>
+          <i class="fa-solid fa-phone" title="Voice Call"></i>
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <i class="fa-solid fa-ellipsis-vertical"></i>
+        </div>
+      </div>
 
-    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+      <!-- Messages Stream -->
+      <div class="chat-messages" id="message-container">
+        <div class="message msg-incoming">
+          Hello! Kaisa hai?
+          <span class="msg-time">10:42 AM</span>
+        </div>
+        <div class="message msg-outgoing">
+          Bas badhiya! Tu bata?
+          <span class="msg-time">10:44 AM</span>
+        </div>
+        <div class="message msg-incoming">
+          Haan bhai, kya plan hai aaj ka?
+          <span class="msg-time">10:45 AM</span>
+        </div>
+      </div>
 
-    <!-- Sender Connect Section -->
-    <div id="senderControls">
-        <p>Aapko jis phone me sunna hai, uska ID yahan dalein:</p>
-        <input type="text" id="remoteId" placeholder="Receiver ka Peer ID dalein">
-        <button id="startBtn" class="btn-start" onclick="startStreaming()">Mic On Karein & Audio Bhejein</button>
-        <button id="stopBtn" class="btn-stop" onclick="stopStreaming()">Audio Sharing Band Karein</button>
+      <!-- Input Message Field -->
+      <div class="chat-input-bar">
+        <i class="fa-regular fa-face-smile"></i>
+        <i class="fa-solid fa-paperclip"></i>
+        <input type="text" id="message-input" placeholder="Type a message" onkeypress="handleKeyPress(event)">
+        <i class="fa-solid fa-paper-plane send-btn" onclick="sendMessage()"></i>
+      </div>
     </div>
+  </div>
 
-    <!-- Audio Player for Receiver -->
-    <audio id="remoteAudio" autoplay controls></audio>
-</div>
+  <script>
+    // Tab Switch Logic
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
 
-<script>
-    let peer = new Peer(); // Free PeerJS Cloud Server for WebRTC signaling
-    let localStream = null;
-    let currentCall = null;
-
-    // Show Peer ID when generated
-    peer.on('open', (id) => {
-        document.getElementById('myId').value = id;
-        document.getElementById('statusText').innerText = "Status: Ready";
-    });
-
-    // 1. RECEIVER LOGIC: Jab samne se call aayegi
-    peer.on('call', (call) => {
-        call.answer(); // Automatic answer for receiving stream
-        call.on('stream', (remoteStream) => {
-            const audioElement = document.getElementById('remoteAudio');
-            audioElement.srcObject = remoteStream;
-            
-            updateStatus("🔊 Audio Receiving Live...", true);
-        });
-    });
-
-    // 2. SENDER LOGIC: Jab user Mic Permission dekar stream shuru karega
-    async function startStreaming() {
-        const remotePeerId = document.getElementById('remoteId').value;
-        if (!remotePeerId) {
-            alert("Kripya Receiver ka Peer ID dalein!");
-            return;
-        }
-
-        try {
-            // Ask for microphone permission
-            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-            
-            // WebRTC Call to Remote ID
-            currentCall = peer.call(remotePeerId, localStream);
-
-            // Update UI to show Mic is Active
-            updateStatus("🔴 Microphone Active (Streaming...)", true);
-            document.getElementById('startBtn').style.display = 'none';
-            document.getElementById('stopBtn').style.display = 'block';
-
-        } catch (err) {
-            alert("Microphone permission nahi mili ya error aaya: " + err.message);
-            console.error(err);
-        }
+      event.target.classList.add('active');
+      document.getElementById(tabName + '-panel').classList.add('active');
     }
 
-    // 3. STOP LOGIC: Manual Stop Function
-    function stopStreaming() {
-        if (localStream) {
-            localStream.getTracks().forEach(track => track.stop()); // Stop Mic
-            localStream = null;
-        }
-        if (currentCall) {
-            currentCall.close();
-        }
-        
-        updateStatus("Status: Stopped", false);
-        document.getElementById('startBtn').style.display = 'block';
-        document.getElementById('stopBtn').style.display = 'none';
+    // Chat Switcher Logic
+    function openChat(name) {
+      document.getElementById('chat-title').innerText = name;
+      const msgContainer = document.getElementById('message-container');
+      msgContainer.innerHTML = `
+        <div class="message msg-incoming">
+          Welcome to ${name}!
+          <span class="msg-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+        </div>
+      `;
     }
 
-    function updateStatus(text, isActive) {
-        document.getElementById('statusText').innerText = text;
-        const statusBox = document.getElementById('statusBox');
-        const indicator = document.getElementById('indicator');
-        
-        if (isActive) {
-            statusBox.classList.add('status-active');
-            indicator.classList.add('indicator-on');
-        } else {
-            statusBox.classList.remove('status-active');
-            indicator.classList.remove('indicator-on');
-        }
-    }
-</script>
+    // Send Message Logic
+    function sendMessage() {
+      const input = document.getElementById('message-input');
+      const text = input.value.trim();
+      if (!text) return;
 
+      const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      const msgContainer = document.getElementById('message-container');
+
+      const newMsg = document.createElement('div');
+      newMsg.className = 'message msg-outgoing';
+      newMsg.innerHTML = `${text} <span class="msg-time">${time}</span>`;
+
+      msgContainer.appendChild(newMsg);
+      input.value = '';
+      msgContainer.scrollTop = msgContainer.scrollHeight;
+    }
+
+    function handleKeyPress(e) {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    }
+  </script>
 </body>
 </html>
